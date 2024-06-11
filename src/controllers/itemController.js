@@ -1,6 +1,7 @@
 // controllers/itemController.js
 
 const itemService = require("../services/itemService");
+const { ObjectId } = require("mongodb"); // Import ObjectId from the mongodb package
 
 // Create a new item
 exports.createItem = async (req, res) => {
@@ -25,7 +26,9 @@ exports.getItems = async (req, res) => {
 // Get a single item by ID
 exports.getItemById = async (req, res) => {
   try {
-    const item = await itemService.getItemById(req.params.id);
+    const { id } = req.query;
+    const objectId = new ObjectId(id);
+    const item = await itemService.getItemById(objectId);
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
@@ -38,7 +41,10 @@ exports.getItemById = async (req, res) => {
 // Update an item
 exports.updateItem = async (req, res) => {
   try {
-    const item = await itemService.updateItem(req.params.id, req.body);
+    const { id } = req.query;
+    const objectId = new ObjectId(id);
+    const updateData = req.body;
+    const item = await itemService.updateItem(objectId, updateData);
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
@@ -51,7 +57,9 @@ exports.updateItem = async (req, res) => {
 // Delete an item
 exports.deleteItem = async (req, res) => {
   try {
-    const item = await itemService.deleteItem(req.params.id);
+    const { id } = req.query;
+    const objectId = new ObjectId(id);
+    const item = await itemService.deleteItem(objectId);
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }
