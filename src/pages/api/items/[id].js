@@ -1,5 +1,8 @@
 import itemController from "../../../controllers/itemController";
+import connectDB from "../../../config/db";
 
+// Initialize the database connection
+connectDB();
 export default async (req, res) => {
   switch (req.method) {
     case "GET":

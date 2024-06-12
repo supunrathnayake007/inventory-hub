@@ -17,7 +17,6 @@ const inventoryTransactionSchema = new mongoose.Schema({
   reference_id: { type: mongoose.Schema.Types.ObjectId, required: true },
 });
 
-module.exports = mongoose.model(
-  "InventoryTransaction",
-  inventoryTransactionSchema
-);
+module.exports =
+  mongoose.models.InventoryTransaction ||
+  mongoose.model("InventoryTransaction", inventoryTransactionSchema);

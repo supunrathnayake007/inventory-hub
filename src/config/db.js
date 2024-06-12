@@ -6,10 +6,7 @@ const connectDB = async () => {
     return;
   }
   // Use new db connection
-  await mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  await mongoose.connect(process.env.MONGODB_URI);
   console.log("MongoDB Connected");
 };
 
