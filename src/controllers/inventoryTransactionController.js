@@ -11,8 +11,9 @@ export const getInventoryTransactions = async (req, res) => {
   }
 };
 
-export const getInventoryTransactionById = async (req, res, id) => {
+export const getInventoryTransactionById = async (req, res) => {
   try {
+    const { id } = req.query;
     const objectId = new ObjectId(id);
     const transaction =
       await inventoryTransactionService.getInventoryTransactionById(objectId);
@@ -32,8 +33,9 @@ export const createInventoryTransaction = async (req, res) => {
   }
 };
 
-export const updateInventoryTransaction = async (req, res, id) => {
+export const updateInventoryTransaction = async (req, res) => {
   try {
+    const { id } = req.query;
     const objectId = new ObjectId(id);
     const updatedTransaction =
       await inventoryTransactionService.updateInventoryTransaction(
@@ -46,10 +48,14 @@ export const updateInventoryTransaction = async (req, res, id) => {
   }
 };
 
-export const deleteInventoryTransaction = async (req, res, id) => {
+export const deleteInventoryTransaction = async (req, res) => {
   try {
+    const { id } = req.query;
     const objectId = new ObjectId(id);
     await inventoryTransactionService.deleteInventoryTransaction(objectId);
+    res
+      .status(200)
+      .json({ message: "inventory transaction deleted successfully" });
     res.status(204).end();
   } catch (error) {
     res.status(400).json({ error: error.message });

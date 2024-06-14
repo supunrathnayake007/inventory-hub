@@ -3,7 +3,7 @@ const { ObjectId } = require("mongodb");
 
 exports.getPurchaseOrderById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const objectId = new ObjectId(id);
     const purchaseOrder = await purchaseOrderService.getPurchaseOrderById(
       objectId
@@ -39,7 +39,7 @@ exports.createPurchaseOrder = async (req, res) => {
 
 exports.updatePurchaseOrder = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const objectId = new ObjectId(id);
     const updatedPurchaseOrder = await purchaseOrderService.updatePurchaseOrder(
       objectId,
@@ -53,7 +53,7 @@ exports.updatePurchaseOrder = async (req, res) => {
 
 exports.deletePurchaseOrder = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const objectId = new ObjectId(id);
     await purchaseOrderService.deletePurchaseOrder(objectId);
     res.status(200).json({ message: "purchase Order deleted successfully" });

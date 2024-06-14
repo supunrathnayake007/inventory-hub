@@ -7,6 +7,30 @@ const purchaseOrderSchema = new mongoose.Schema({
     ref: "Supplier", // Assuming you have a Supplier model
     required: true,
   },
+  buyer_name: {
+    type: String,
+    default: "",
+  },
+  buyer_contact: {
+    type: String,
+    default: "",
+  },
+  shipping_address: {
+    type: String,
+    default: "",
+  },
+  shipping_method: {
+    type: String,
+    default: "",
+  },
+  shipping_date: {
+    type: Date,
+    default: null,
+  },
+  tracking_number: {
+    type: String,
+    default: "",
+  },
   order_date: {
     type: Date,
     default: Date.now,
