@@ -59,7 +59,8 @@ exports.deleteItem = async (req, res) => {
   try {
     const { id } = req.query;
     const objectId = new ObjectId(id);
-    const item = await itemService.deleteItem(objectId);
+    const data = req.body;
+    const item = await itemService.deleteItem(objectId, data);
     if (!item) {
       return res.status(404).json({ message: "Item not found" });
     }

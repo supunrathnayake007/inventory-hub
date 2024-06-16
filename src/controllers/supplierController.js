@@ -38,7 +38,8 @@ exports.deleteSupplier = async (req, res) => {
   try {
     const { id } = req.query;
     const objectId = new ObjectId(id);
-    await supplierService.deleteSupplier(objectId);
+    const data = req.body;
+    await supplierService.deleteSupplier(objectId, data);
     res.status(200).json({ message: "supplier deleted successfully" });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -49,7 +50,8 @@ exports.getSupplierById = async (req, res) => {
   try {
     const { id } = req.query;
     const objectId = new ObjectId(id);
-    const supplier = await supplierService.getSupplierById(objectId);
+    const data = req.body;
+    const supplier = await supplierService.getSupplierById(objectId, data);
     if (!supplier) {
       return res.status(404).json({ error: "Supplier not found" });
     }

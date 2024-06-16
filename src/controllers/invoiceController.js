@@ -43,8 +43,9 @@ exports.deleteInvoice = async (req, res) => {
   try {
     const { id } = req.query;
     const objectId = new ObjectId(id);
-    await invoiceService.deleteInvoice(objectId);
-    res.status(204).end();
+    const data = req.body;
+    await invoiceService.deleteInvoice(objectId, data);
+    res.status(200).json({ message: "Invoice deleted successfully" });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

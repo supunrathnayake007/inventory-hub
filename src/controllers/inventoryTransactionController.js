@@ -52,7 +52,11 @@ export const deleteInventoryTransaction = async (req, res) => {
   try {
     const { id } = req.query;
     const objectId = new ObjectId(id);
-    await inventoryTransactionService.deleteInventoryTransaction(objectId);
+    const data = req.body;
+    await inventoryTransactionService.deleteInventoryTransaction(
+      objectId,
+      data
+    );
     res
       .status(200)
       .json({ message: "inventory transaction deleted successfully" });

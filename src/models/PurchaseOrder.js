@@ -57,6 +57,11 @@ const purchaseOrderSchema = new mongoose.Schema({
       },
     },
   ],
+  created_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Assuming you have a User model
+    required: true,
+  },
 });
 
 module.exports =

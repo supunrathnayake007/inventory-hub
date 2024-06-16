@@ -1,24 +1,100 @@
 // services/categoryService.js
 const Category = require("../models/Category");
+const logChanges = require("../middleware/logChanges");
+const { verifyToken } = require("../middleware/authMiddleware");
+const { ObjectId } = require("mongodb");
+const mongoose = require("mongoose");
 
 exports.createCategory = async (categoryData) => {
-  const category = new Category(categoryData);
+  const token = categoryData.token;
+  if (!token) {
+    throw new Error("No User Token provided");
+  }
+  const decoded = await verifyToken(token); // Implement verifyToken to decode the token
+  const userId = decoded.id;
+  const objectUserId = new ObjectId(userId);
+
+  const category = new Category({ ...categoryData, created_by: objectUserId });
   await category.save();
   return category;
 };
 exports.updateCategory = async (id, updateData) => {
-  // Find the category by ID and update it with the new data
-  return await Category.findByIdAndUpdate(id, updateData, { new: true });
+  const token = updateData.token;
+  if (!token) {
+    throw new Error("No User Token provided");
+  }
+  const decoded = await verifyToken(token); // Implement verifyToken to decode the token
+  const userId = decoded.id;
+  const objectUserId = new ObjectId(userId);
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const existingCategory = await Category.findById(id).session(session);
+    if (!existingCategory) {
+      throw new Error("Category not found");
+    }
+    const updatedCategory = await Category.findByIdAndUpdate(
+      id,
+      {
+        $set: updateData,
+        $inc: { __v: 1 },
+      },
+      { new: true, runValidators: true, session }
+    );
+
+    const changes = {};
+    for (const key in updateData) {
+      if (updateData[key] !== existingCategory[key] && key !== "token") {
+        changes[key] = { old: existingCategory[key], new: updateData[key] };
+      }
+    }
+
+    await logChanges(updatedCategory, "update", objectUserId, changes);
+    await session.commitTransaction();
+    session.endSession();
+    return updatedCategory;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
+exports.deleteCategory = async (id, data) => {
+  const token = data.token;
+  if (!token) {
+    throw new Error("No User Token provided");
+  }
+  const decoded = await verifyToken(token); // Implement verifyToken to decode the token
+  const userId = decoded.id;
+  const objectUserId = new ObjectId(userId);
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const categoryToDelete = await Category.findById(id).session(session);
+    if (!categoryToDelete) {
+      throw new Error("Category not found");
+    }
+    await Category.findByIdAndDelete(id).session(session);
+    const changes = { categoryToDelete };
+    await logChanges(categoryToDelete, "delete", objectUserId, changes);
+
+    await session.commitTransaction();
+    session.endSession();
+    return categoryToDelete;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+
+  // Find the category by ID and delete it
+  return await Category.findByIdAndDelete(id);
 };
 
 exports.getCategoryById = async (id) => {
   // Find the category by ID
   return await Category.findById(id);
-};
-
-exports.deleteCategory = async (id) => {
-  // Find the category by ID and delete it
-  return await Category.findByIdAndDelete(id);
 };
 
 exports.getCategories = async () => {

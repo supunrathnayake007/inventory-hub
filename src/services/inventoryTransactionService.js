@@ -1,14 +1,28 @@
 const InventoryTransaction = require("../models/InventoryTransaction");
-
 const Item = require("../models/Item");
+const logChanges = require("../middleware/logChanges");
+const { verifyToken } = require("../middleware/authMiddleware");
+const { ObjectId } = require("mongodb");
+const mongoose = require("mongoose");
 
 // then transaction create base on the type item quantity increase or decrease
 exports.createInventoryTransaction = async (transactionData) => {
+  const token = transactionData.token;
+  if (!token) {
+    throw new Error("No User Token provided");
+  }
+  const decoded = await verifyToken(token); // Implement verifyToken to decode the token
+  const userId = decoded.id;
+  const objectUserId = new ObjectId(userId);
+
   const session = await InventoryTransaction.startSession();
   session.startTransaction();
 
   try {
-    const transaction = new InventoryTransaction(transactionData);
+    const transaction = new InventoryTransaction({
+      ...transactionData,
+      created_by: objectUserId,
+    });
     await transaction.save({ session });
 
     // Update item quantity based on transaction type
@@ -48,10 +62,94 @@ exports.getInventoryTransactions = async () =>
 exports.getInventoryTransactionById = async (id) =>
   await InventoryTransaction.findById(id);
 
-exports.updateInventoryTransaction = async (id, inventoryTransactionData) =>
-  await InventoryTransaction.findByIdAndUpdate(id, inventoryTransactionData, {
-    new: true,
-  });
+exports.updateInventoryTransaction = async (id, inventoryTransactionData) => {
+  const token = inventoryTransactionData.token;
+  if (!token) {
+    throw new Error("No User Token provided");
+  }
+  const decoded = await verifyToken(token); // Implement verifyToken to decode the token
+  const userId = decoded.id;
+  const objectUserId = new ObjectId(userId);
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const existingInventoryTransaction = await InventoryTransaction.findById(
+      id
+    ).session(session);
+    if (!existingInventoryTransaction) {
+      throw new Error("Inventory Transaction not found");
+    }
 
-exports.deleteInventoryTransaction = async (id) =>
-  await InventoryTransaction.findByIdAndDelete(id);
+    const updatedInventoryTransaction =
+      await InventoryTransaction.findByIdAndUpdate(
+        id,
+        {
+          $set: inventoryTransactionData,
+          $inc: { __v: 1 },
+        },
+        { new: true, runValidators: true, session }
+      );
+
+    const changes = {};
+    for (const key in inventoryTransactionData) {
+      if (
+        inventoryTransactionData[key] !== existingInventoryTransaction[key] &&
+        key !== "token"
+      ) {
+        changes[key] = {
+          old: existingInventoryTransaction[key],
+          new: inventoryTransactionData[key],
+        };
+      }
+    }
+    await logChanges(
+      updatedInventoryTransaction,
+      "update",
+      objectUserId,
+      changes
+    );
+    await session.commitTransaction();
+    session.endSession();
+    return updatedInventoryTransaction;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
+exports.deleteInventoryTransaction = async (id, data) => {
+  const token = data.token;
+  if (!token) {
+    throw new Error("No User Token provided");
+  }
+  const decoded = await verifyToken(token); // Implement verifyToken to decode the token
+  const userId = decoded.id;
+  const objectUserId = new ObjectId(userId);
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const InventoryTransactionToDelete = await InventoryTransaction.findById(
+      id
+    ).session(session);
+    if (!InventoryTransactionToDelete) {
+      throw new Error("Inventory Transaction not found");
+    }
+    await InventoryTransaction.findByIdAndDelete(id).session(session);
+    const changes = { InventoryTransactionToDelete };
+    await logChanges(
+      InventoryTransactionToDelete,
+      "delete",
+      objectUserId,
+      changes
+    );
+
+    await session.commitTransaction();
+    session.endSession();
+    return InventoryTransactionToDelete;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};

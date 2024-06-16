@@ -55,7 +55,8 @@ exports.deletePurchaseOrder = async (req, res) => {
   try {
     const { id } = req.query;
     const objectId = new ObjectId(id);
-    await purchaseOrderService.deletePurchaseOrder(objectId);
+    const data = req.body;
+    await purchaseOrderService.deletePurchaseOrder(objectId, data);
     res.status(200).json({ message: "purchase Order deleted successfully" });
     res.status(204).end();
   } catch (error) {

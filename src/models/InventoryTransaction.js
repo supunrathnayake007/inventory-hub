@@ -15,6 +15,11 @@ const inventoryTransactionSchema = new mongoose.Schema({
     required: true,
   },
   reference_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+  created_by: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // Assuming you have a User model
+    required: true,
+  },
 });
 
 module.exports =

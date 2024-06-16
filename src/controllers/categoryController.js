@@ -55,7 +55,11 @@ exports.deleteCategory = async (req, res) => {
     const { id } = req.query; // Get the category ID from the query parameters
     const objectId = new ObjectId(id);
     // Delete the category using the service
-    const deletedCategory = await categoryService.deleteCategory(objectId);
+    const data = req.body;
+    const deletedCategory = await categoryService.deleteCategory(
+      objectId,
+      data
+    );
 
     if (!deletedCategory) {
       return res.status(404).json({ message: "Category not found" });
