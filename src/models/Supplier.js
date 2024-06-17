@@ -6,9 +6,9 @@ const supplierSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  contact_name: String,
-  address: String,
-  phone: String,
+  contact_name: { type: String, default: "" },
+  address: { type: String, default: "" },
+  phone: { type: String, default: "" /*,unique: true,*/ },
   email: {
     type: String,
     required: true,

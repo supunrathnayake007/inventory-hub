@@ -5,6 +5,10 @@ const logChanges = require("../middleware/logChanges");
 const { verifyToken } = require("../middleware/authMiddleware");
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
+const {
+  calculateItemFinalPrice,
+  calculateInvoiceAmounts,
+} = require("../utils/invoiceCalculations");
 
 async function generateInvoiceNumber() {
   const lastInvoice = await Invoice.findOne().sort({ date: -1 }).exec();
@@ -31,11 +35,28 @@ exports.createInvoice = async (invoiceData) => {
 
   try {
     const invoice_number = await generateInvoiceNumber();
+    const itemsWithCalculatedValues = invoiceData.items.map((item) => ({
+      ...item,
+      finalPrice: calculateItemFinalPrice(item),
+    }));
+
+    const {
+      total_amount,
+      item_discount_total,
+      item_addon_total,
+      final_amount,
+    } = calculateInvoiceAmounts(itemsWithCalculatedValues, invoiceData);
+
     const invoice = new Invoice({
       ...invoiceData,
       invoice_number,
+      total_amount,
+      item_discount_total,
+      item_addon_total,
+      final_amount,
       created_by: objectUserId,
     });
+
     await invoice.save({ session });
 
     for (let item of invoice.items) {
@@ -84,10 +105,26 @@ exports.updateInvoice = async (id, invoiceData) => {
     if (!existingInvoice) {
       throw new Error("Invoice not found");
     }
+    // Perform calculations on invoiceData items
+    const itemsWithCalculatedValues = invoiceData.items.map((item) => ({
+      ...item,
+      finalPrice: calculateItemFinalPrice(item),
+    }));
+    const {
+      total_amount,
+      item_discount_total,
+      item_addon_total,
+      final_amount,
+    } = calculateInvoiceAmounts(itemsWithCalculatedValues, invoiceData);
+
     const updatedInvoice = await Invoice.findByIdAndUpdate(
       id,
       {
-        $set: invoiceData,
+        ...invoiceData,
+        total_amount,
+        item_discount_total,
+        item_addon_total,
+        final_amount,
         $inc: { __v: 1 },
       },
       { new: true, runValidators: true, session }

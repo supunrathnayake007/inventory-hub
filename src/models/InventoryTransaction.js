@@ -14,7 +14,11 @@ const inventoryTransactionSchema = new mongoose.Schema({
     enum: ["purchase", "sale", "adjustment"],
     required: true,
   },
-  reference_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+  reference_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    default:
+      null /*required: true,*/ /* transaction_type adjustment might not have any ref*/,
+  },
   created_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User", // Assuming you have a User model
