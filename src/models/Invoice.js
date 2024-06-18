@@ -8,6 +8,7 @@ const invoiceSchema = new mongoose.Schema({
   },
   items: [
     {
+      _id: false, // This will prevent Mongoose from generating _id for each subdocument
       item_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Item",
@@ -15,16 +16,20 @@ const invoiceSchema = new mongoose.Schema({
       },
       quantity: { type: Number, required: true },
       price: { type: Number, required: true },
-      discount: { type: Number, default: 0 }, // Discount on item price in percentage
-      addon: { type: Number, default: 0 }, // Addon amount for item
+      discount_percentage: { type: Number, default: 0 }, // Discount on item price in percentage
+      discount_value: { type: Number, default: 0 }, // Discount on item price in value
+      addon_percentage: { type: Number, default: 0 }, // Addon on item price in percentage
+      addon_value: { type: Number, default: 0 }, // Addon on item price in value
     },
   ],
   total_amount: { type: Number, required: true }, // Total amount before discounts and addons
   item_discount_total: { type: Number, required: true }, // Total discount from items
   item_addon_total: { type: Number, required: true }, // Total addons from items
-  invoice_discount: { type: Number, default: 0 }, // Discount on total amount in percentage
-  invoice_addon: { type: Number, default: 0 }, // Addon amount for invoice
-  final_amount: { type: Number, required: true }, // Final amount after all discounts and addons
+  invoice_discount_percentage: { type: Number, default: 0 }, // Discount on total amount in percentage
+  invoice_discount_value: { type: Number, default: 0 }, // Discount on total amount in value
+  invoice_addon_percentage: { type: Number, default: 0 }, // Addon on total amount in percentage
+  invoice_addon_value: { type: Number, default: 0 }, // Addon on total amount in value
+  final_amount_fixed: { type: Number, required: true }, // Final amount after all discounts and addons
   date: { type: Date, default: Date.now },
   status: {
     type: String,
@@ -38,56 +43,6 @@ const invoiceSchema = new mongoose.Schema({
     required: true,
   },
 });
-
-// Middleware to calculate amounts before saving
-// invoiceSchema.pre("save", function (next) {
-//   calculateAmounts(this);
-//   next();
-// });
-
-// Middleware to calculate amounts before updating
-// invoiceSchema.pre("findOneAndUpdate", function (next) {
-//   const update = this.getUpdate();
-//   if (update.items || update.invoice_discount || update.invoice_addon) {
-//     calculateAmounts(update);
-//   }
-//   next();
-// });
-
-// Function to calculate amounts
-// function calculateAmounts(invoice) {
-//   const itemsWithDiscountsAndAddons = invoice.items.map((item) => {
-//     const discount = item.discount || 0;
-//     const addon = item.addon || 0;
-//     const discountedPrice = item.price - item.price * (discount / 100);
-//     const finalPrice = discountedPrice + addon;
-//     return { ...item, finalPrice };
-//   });
-
-//   invoice.total_amount = itemsWithDiscountsAndAddons.reduce(
-//     (sum, item) => sum + item.price * item.quantity,
-//     0
-//   );
-//   invoice.item_discount_total = itemsWithDiscountsAndAddons.reduce(
-//     (sum, item) => sum + ((item.price * item.discount) / 100) * item.quantity,
-//     0
-//   );
-//   invoice.item_addon_total = itemsWithDiscountsAndAddons.reduce(
-//     (sum, item) => sum + item.addon * item.quantity,
-//     0
-//   );
-//   const amount_after_item_discounts_and_addons =
-//     invoice.total_amount -
-//     invoice.item_discount_total +
-//     invoice.item_addon_total;
-
-//   const invoice_discount = invoice.invoice_discount || 0;
-//   const invoice_addon = invoice.invoice_addon || 0;
-//   invoice.final_amount =
-//     amount_after_item_discounts_and_addons -
-//     amount_after_item_discounts_and_addons * (invoice_discount / 100) +
-//     invoice_addon;
-// }
 
 module.exports =
   mongoose.models.Invoice || mongoose.model("Invoice", invoiceSchema);

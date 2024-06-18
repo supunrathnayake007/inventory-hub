@@ -1,14 +1,12 @@
 // services/invoiceService.js
 const Invoice = require("../models/Invoice");
+const Item = require("../models/Item");
 const inventoryTransactionService = require("./inventoryTransactionService");
 const logChanges = require("../middleware/logChanges");
 const { verifyToken } = require("../middleware/authMiddleware");
 const { ObjectId } = require("mongodb");
 const mongoose = require("mongoose");
-const {
-  calculateItemFinalPrice,
-  calculateInvoiceAmounts,
-} = require("../utils/invoiceCalculations");
+const { calculateInvoiceAmounts } = require("../utils/invoiceCalculations");
 
 async function generateInvoiceNumber() {
   const lastInvoice = await Invoice.findOne().sort({ date: -1 }).exec();
@@ -35,25 +33,37 @@ exports.createInvoice = async (invoiceData) => {
 
   try {
     const invoice_number = await generateInvoiceNumber();
-    const itemsWithCalculatedValues = invoiceData.items.map((item) => ({
-      ...item,
-      finalPrice: calculateItemFinalPrice(item),
-    }));
+
+    const itemsWithPricesPromises = invoiceData.items.map(async (item) => {
+      const objectItemId = new ObjectId(item.item_id);
+      const itemDetails = await Item.findById(objectItemId);
+      const item_price = itemDetails?.price;
+      return {
+        ...item,
+        price: item_price,
+        //finalPrice: calculateItemFinalPrice({ ...item, price: item_price }),
+      };
+    });
+
+    const itemsWithCalculatedValues = await Promise.all(
+      itemsWithPricesPromises
+    );
 
     const {
       total_amount,
       item_discount_total,
       item_addon_total,
-      final_amount,
+      final_amount_fixed,
     } = calculateInvoiceAmounts(itemsWithCalculatedValues, invoiceData);
 
     const invoice = new Invoice({
       ...invoiceData,
+      items: itemsWithCalculatedValues,
       invoice_number,
       total_amount,
       item_discount_total,
       item_addon_total,
-      final_amount,
+      final_amount_fixed,
       created_by: objectUserId,
     });
 
@@ -108,14 +118,29 @@ exports.updateInvoice = async (id, invoiceData) => {
     // Perform calculations on invoiceData items
     const itemsWithCalculatedValues = invoiceData.items.map((item) => ({
       ...item,
-      finalPrice: calculateItemFinalPrice(item),
+      //finalPrice: calculateItemFinalPrice(item),
     }));
+    const fieldsToCheck = [
+      "invoice_discount_percentage",
+      "invoice_discount_value",
+      "invoice_addon_percentage",
+      "invoice_addon_value",
+    ];
+    const updatedInvoiceData = { ...invoiceData };
+
+    fieldsToCheck.forEach((field) => {
+      if (isNaN(invoiceData[field])) {
+        updatedInvoiceData[field] = existingInvoice[field];
+      }
+    });
+
+    //const invoiceWithmisingdata
     const {
       total_amount,
       item_discount_total,
       item_addon_total,
-      final_amount,
-    } = calculateInvoiceAmounts(itemsWithCalculatedValues, invoiceData);
+      final_amount_fixed,
+    } = calculateInvoiceAmounts(itemsWithCalculatedValues, updatedInvoiceData);
 
     const updatedInvoice = await Invoice.findByIdAndUpdate(
       id,
@@ -124,7 +149,7 @@ exports.updateInvoice = async (id, invoiceData) => {
         total_amount,
         item_discount_total,
         item_addon_total,
-        final_amount,
+        final_amount_fixed,
         $inc: { __v: 1 },
       },
       { new: true, runValidators: true, session }
@@ -176,6 +201,4 @@ exports.deleteInvoice = async (id, data) => {
     session.endSession();
     throw error;
   }
-
-  return await Invoice.findByIdAndDelete(id);
 };
