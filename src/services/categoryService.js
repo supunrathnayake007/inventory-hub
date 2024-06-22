@@ -14,6 +14,19 @@ exports.createCategory = async (categoryData) => {
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
 
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("Category-create")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const category = new Category({ ...categoryData, created_by: objectUserId });
   await category.save();
   return category;
@@ -26,6 +39,18 @@ exports.updateCategory = async (id, updateData) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("Category-update")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -68,6 +93,20 @@ exports.deleteCategory = async (id, data) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("Category-delete")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

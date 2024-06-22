@@ -13,6 +13,20 @@ exports.createSupplier = async (supplierData) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("Supplier-create")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const supplier = new Supplier({
     ...supplierData,
     created_by: objectUserId,
@@ -29,6 +43,20 @@ exports.updateSupplier = async (id, updatedData) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("Supplier-update")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -71,6 +99,20 @@ exports.deleteSupplier = async (id, data) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("Supplier-delete")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

@@ -1,5 +1,8 @@
 import connectDB from "../../../../config/db";
-import { getUser } from "../../../../controllers/system/userController";
+import {
+  getUser,
+  updateUser,
+} from "../../../../controllers/system/userController";
 
 connectDB();
 
@@ -8,6 +11,9 @@ export default async (req, res) => {
   switch (method) {
     case "GET":
       await getUser(req, res);
+      break;
+    case "POST":
+      await updateUser(req, res);
       break;
     default:
       res.setHeader("Allow", ["GET"]);

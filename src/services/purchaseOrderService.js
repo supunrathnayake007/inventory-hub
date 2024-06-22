@@ -21,6 +21,19 @@ exports.createPurchaseOrder = async (PurchaseOrderData) => {
   const userId = decoded.id;
   const objectId = new ObjectId(userId);
 
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("PurchaseOrder-create")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const purchaseOrder = new PurchaseOrder({
     ...PurchaseOrderData,
     created_by: objectId,
@@ -37,6 +50,20 @@ exports.updatePurchaseOrder = async (id, PurchaseOrderData) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("PurchaseOrder-update")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -88,6 +115,20 @@ exports.deletePurchaseOrder = async (id, data) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("PurchaseOrder-delete")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

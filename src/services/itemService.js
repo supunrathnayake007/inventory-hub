@@ -13,6 +13,20 @@ exports.createItem = async (itemData) => {
   }
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("item-create")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const objectUserId = new ObjectId(userId);
   //const item = new Item(itemData);
   const item = new Item({
@@ -42,6 +56,20 @@ exports.updateItem = async (id, itemData) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("item-update")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -86,6 +114,20 @@ exports.deleteItem = async (id, data) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("item-delete")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {

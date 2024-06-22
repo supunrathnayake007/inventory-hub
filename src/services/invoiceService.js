@@ -28,6 +28,19 @@ exports.createInvoice = async (invoiceData) => {
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
 
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("invoice-create")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await Invoice.startSession();
   session.startTransaction();
 
@@ -108,6 +121,20 @@ exports.updateInvoice = async (id, invoiceData) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("invoice-update")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -181,6 +208,20 @@ exports.deleteInvoice = async (id, data) => {
   const decoded = await verifyToken(token); // Implement verifyToken to decode the token
   const userId = decoded.id;
   const objectUserId = new ObjectId(userId);
+
+  //validate system function access permission
+  const functions = decoded.functions;
+  if (!functions) {
+    throw new Error(
+      "Access Denied - No system functions assigned to the user."
+    );
+  }
+  if (!functions.includes("invoice-delete")) {
+    throw new Error(
+      "Access Denied - User doesn't have permission to perform this function."
+    );
+  }
+
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
