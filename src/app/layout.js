@@ -28,23 +28,29 @@ export default function RootLayout({ children }) {
               >
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
               </svg>
-              <span class="ml-3 text-xl">Tailblocks</span>
+              <span class="ml-3 text-xl">Supun Rathnayake</span>
             </a>
             <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
+              <Link
+                className="mr-5 hover:text-gray-900 hover:bg-gray-200 py-2 px-4 rounded transition duration-300 ease-in-out"
+                href="/"
+              >
+                Home
+              </Link>
               <Link
                 className="mr-5 hover:text-gray-900 hover:bg-gray-200 py-2 px-4 rounded transition duration-300 ease-in-out"
                 href="/docs"
               >
                 Documentation
               </Link>
-              <a class="mr-5 hover:text-gray-900 hover:bg-gray-200 py-2 px-4 rounded transition duration-300 ease-in-out">
-                Second Link
-              </a>
+              <Link
+                className="mr-5 hover:text-gray-900 hover:bg-gray-200 py-2 px-4 rounded transition duration-300 ease-in-out"
+                href="/docs/endPoints"
+              >
+                API Endpoints
+              </Link>
               <a class="mr-5 hover:text-gray-900 hover:bg-gray-200 py-2 px-4 rounded transition duration-300 ease-in-out">
                 Third Link
-              </a>
-              <a class="mr-5 hover:text-gray-900 hover:bg-gray-200 py-2 px-4 rounded transition duration-300 ease-in-out">
-                Fourth Link
               </a>
             </nav>
             <button class="inline-flex items-center bg-gray-100 border-0 py-1 px-3 focus:outline-none hover:bg-gray-200 rounded text-base mt-4 md:mt-0">
@@ -81,7 +87,7 @@ export default function RootLayout({ children }) {
                 >
                   <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
                 </svg>
-                <span class="ml-3 text-xl">Tailblocks</span>
+                <span class="ml-3 text-xl">Supun Rathnayake</span>
               </a>
               <p class="mt-2 text-sm text-gray-500">
                 Air plant banjo lyft occupy retro adaptogen indego
@@ -169,7 +175,7 @@ export default function RootLayout({ children }) {
           <div class="bg-gray-100">
             <div class="container mx-auto py-4 px-5 flex flex-wrap flex-col sm:flex-row">
               <p class="text-gray-500 text-sm text-center sm:text-left">
-                © 2020 Tailblocks —
+                © 2024 Supun Rathnayake —
                 <a
                   href="https://twitter.com/knyttneve"
                   rel="noopener noreferrer"
